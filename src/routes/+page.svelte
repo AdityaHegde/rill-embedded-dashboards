@@ -1,4 +1,5 @@
 <script lang="ts">
+    import {page} from "$app/state"
     import {formatEvent} from "$lib";
     import {onMount} from "svelte";
     import {Button} from "$lib/components/ui/button";
@@ -12,9 +13,9 @@
     const USER_A = "aditya.hegde+A@rilldata.com";
     const USER_B = "aditya.hegde+B@rilldata.com";
     const USERS = [
+        {label: "No user", email: undefined},
         {label: "User A", email: USER_A},
         {label: "User B", email: USER_B},
-        {label: "No user", email: undefined}
     ];
     let selectedEmail = $state<string | undefined>(undefined);
 
@@ -23,6 +24,8 @@
     let iframeUrl = $state("");
     let iframeOrigin = $state("");
     let iframe = $state<HTMLIFrameElement | undefined>(undefined);
+
+    let rillOpen = $derived(page.url.searchParams.get("rill_open"));
 
     async function loadUrl() {
         const resp = await fetch(
@@ -42,7 +45,9 @@
             },
         );
         const urlResp = await resp.json();
-        iframeUrl = urlResp.iframeSrc;
+        const url = new URL(urlResp.iframeSrc);
+        if (rillOpen) url.searchParams.set("open", rillOpen);
+        iframeUrl = url.toString();
         iframeOrigin = new URL(iframeUrl).origin;
     }
 
